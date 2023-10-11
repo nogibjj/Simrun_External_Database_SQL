@@ -7,5 +7,5 @@ requests==2.26.0
 #rust based linter
 ruff==0.0.284
 fire==0.5.0
-chardet 
+charset 
 pandas

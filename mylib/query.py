@@ -15,9 +15,10 @@ def query():
     cursor = conn.cursor()
     cursor.execute("SELECT * from range(10)")
     rows = cursor.fetchall()
-    print(rows)
-    conn.close()
-    return rows
+    
+    
+    
+    return print(rows)
 
 
 if __name__ == "__main__":
