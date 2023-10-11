@@ -23,7 +23,7 @@ def main(the_query):
 
 
 if __name__ == "__main__":
-    
-    #load("SELECT COUNT(*) FROM table1")
-    fire.Fire(main)
-    #query("SELECT COUNT(*) FROM table1")
+    # load("SELECT COUNT(*) FROM table1")
+    # fire.Fire(main)
+    extract()
+    # query("SELECT COUNT(*) FROM table1")
