@@ -32,9 +32,9 @@ def load(dataset="data/Jeopardy.csv", db_name: str = "JeopardyDB.db", sql_conn=N
             access_token="dapi8194f2fd51cb10dae0c6e958138f0e53-3",
         )
 
-        print(f"Database {db_name} created.")
-    else:
-        conn = sql_conn
+        # print(f"Database {db_name} created.")
+        # else:
+        # conn = sql_conn
 
         c = conn.cursor()  # create a cursor
         # drop the table if it exists

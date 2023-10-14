@@ -15,4 +15,8 @@ def extract(
     with requests.get(url) as r:
         with open(file_path, "wb") as f:
             f.write(r.content)
+    print(file_path)
     return file_path
+
+
+extract()
