@@ -6,57 +6,64 @@ Example:
 import csv
 from databricks import sql
 import os
+import pandas as pd
+from dotenv import load_dotenv
 
 
-def load(dataset="data/Jeopardy.csv", db_name: str = "JeopardyDB.db", sql_conn=None):
-    """Creating a remote databricks sql database with data from this csv."""
+def load(dataset="data/Jeopardy.csv"):
+    """Loads the dataset from temporary csv from data/Jeopardy.csv and into a Databricks remote database"""
 
-    with open(dataset, newline="") as csvfile:
-        payload = list(csv.reader(csvfile, delimiter=","))
+    df1 = pd.read_csv(dataset, delimiter=",", skiprows=1)
+    load_dotenv()
+    host = os.getenv("DB_HOST")
+    token = os.getenv("DB_TOKEN")
+    path = os.getenv("DB_PATH")
 
-    column_names = [
-        "Show Number",
-        "Air Date",
-        "Round",
-        "Category",
-        "Value",
-        "Question",
-        "Answer",
-    ]
+    with sql.connect(
+        server_hostname = host,
+        http_path=path,
+        access_token=token,
+    ) as connection:
+        c = connection.cursor()
+        c.execute("SHOW TABLES FROM default")
+        tables = c.fetchall()
 
-    if not sql_conn:
-        # sql connection to databricks remote database
-        conn = sql.connect(
-            server_hostname="adb-6268784207758746.6.azuredatabricks.net",
-            http_path="/sql/1.0/warehouses/c96a5e8d89f16478",
-            access_token="dapi8194f2fd51cb10dae0c6e958138f0e53-3",
-        )
+        for table in tables:
+            print(table)
+            table_name = table.tableName
+            c.execute(f"DROP TABLE IF EXISTS {table_name}")
 
-        # print(f"Database {db_name} created.")
-        # else:
-        # conn = sql_conn
-
-        c = conn.cursor()  # create a cursor
-        # drop the table if it exists
-        c.execute(f"DROP TABLE IF EXISTS {db_name}")
-        print(f"Excuted: DROP TABLE IF EXISTS {db_name}")
-        c.execute(f"CREATE TABLE IF NOT EXISTS {db_name} ({', '.join(column_names)})")
-        print(f"Excuted: CREATE TABLE {db_name} ({', '.join(column_names)})")
-        # insert the data from payload
-        payload[1:] = [f"{tuple(row)}" for row in payload[1:]]
-        c.execute(
-            f"INSERT INTO {db_name} ({', '.join(column_names)}) VALUES {', '.join(payload[1:])}"
-        )
-
-        print(
-            f"Excuted: INSERT INTO {db_name} VALUES"
-            f"({', '.join(['?']*len(column_names))})"
-        )
-
-        conn.commit()
-        conn.close()
-
-    return conn
+        c.execute("SHOW TABLES FROM default LIKE 'jeopardy'")
+        result = c.fetchall()
+        print(f"tables : {result}")
+        if not result:
+            c.execute(
+                """ 
+                    CREATE TABLE IF NOT EXISTS jeopardy (
+                        Show Number,
+                        Air Date,
+                        Round,
+                        Category,
+                        Value,
+                        Question,
+                        Answer
+                        )
+                    """
+                )
+            for _, row in df1.iterrows():
+                new_row = []
+                for r in row:
+                    if r is None:
+                        new_row.append("Null")
+                    else:
+                        new_row.append(r)
+                print(new_row)
+                convert = (_,) + tuple(new_row)
+                c.execute(f"INSERT INTO jeopardy VALUES {convert}")
+        full_results = c.fetchall()
+        print(full_results)
+        c.close()
+    return "done"
 
 
 if __name__ == "__main__":

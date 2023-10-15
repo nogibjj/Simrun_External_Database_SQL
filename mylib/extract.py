@@ -5,6 +5,7 @@ JSON or CSV formats tend to work well
 Jeopardy dataset
 """
 import requests
+import pandas as pd
 
 
 def extract(
@@ -15,8 +16,10 @@ def extract(
     with requests.get(url) as r:
         with open(file_path, "wb") as f:
             f.write(r.content)
-    print(file_path)
-    return file_path
+
+    df1 = pd.read_csv(file_path, delimiter=",", skiprows=1)
+    print(df1.head())
+    return df1, file_path
 
 
 extract()

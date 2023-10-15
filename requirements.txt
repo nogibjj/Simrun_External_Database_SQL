@@ -8,3 +8,5 @@ requests==2.26.0
 ruff==0.0.284
 fire==0.5.0
 pandas
+python-dotenv
+databricks-sql-connector
