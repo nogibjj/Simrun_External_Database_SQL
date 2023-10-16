@@ -5,55 +5,55 @@ Example:
 """
 
 import csv
+from multiprocessing import connection
 from databricks import sql
-import os
 import pandas as pd
-from dotenv import load_dotenv
-from delta.tables import DeltaTable
 
 
-def load(dataset="data/Jeopardy.csv", dataset2 = "data/Jeopardy2.csv""):
+def load(dataset="data/Jeopardy.csv", dataset2 = "data/Jeopardy2.csv"):
     """Loads the dataset from temporary csv from data/Jeopardy.csv and into a Databricks remote database"""
 
     df1 = pd.read_csv(dataset, delimiter=",", skiprows=1)
     df2 = pd.read_csv(dataset2, delimiter=",", skiprows=1)
 
-    load_dotenv()
-    host = os.getenv("DB_HOST")
-    token = os.getenv("DB_TOKEN")
-    path = os.getenv("DB_PATH")
+    DB_TOKEN = 'dapie73a0bd9ca8aa631b7e8e50ee667473e-3'
+    DB_HOST = 'adb-6268784207758746.6.azuredatabricks.net'
+    DB_PORT = 443
+    DEBUG= True
+    DB_PATH = '/sql/1.0/warehouses/c96a5e8d89f16478'
 
     with sql.connect(
-        server_hostname = host,
-        http_path=path,
-        access_token=token,
+        server_hostname = DB_HOST,
+        http_path=DB_PATH,
+        access_token=DB_TOKEN,
     ) as connection:
         c = connection.cursor()
         c.execute("SHOW TABLES FROM default")
         tables = c.fetchall()
-
         for table in tables:
             print(table)
             table_name = table.tableName
             c.execute(f"DROP TABLE IF EXISTS {table_name}")
 
         c.execute("SHOW TABLES FROM default LIKE 'jeopardy'")
+        
         result = c.fetchall()
         print(f"tables : {result}")
         if not result:
             c.execute(
                 """ 
                     CREATE TABLE IF NOT EXISTS jeopardy (
-                        Show Number,
-                        Air Date,
-                        Round,
-                        Category,
-                        Value,
-                        Question,
-                        Answer
+                        Show INT,
+                        Air VARCHAR(255),
+                        Round VARCHAR(255),
+                        Category VARCHAR(255),
+                        Value VARCHAR(255),
+                        Question VARCHAR(255),
+                        Answer VARCHAR(255)
                         )
                     """
                 )
+            
             for _, row in df1.iterrows():
                 new_row = []
                 for r in row:
@@ -61,58 +61,40 @@ def load(dataset="data/Jeopardy.csv", dataset2 = "data/Jeopardy2.csv""):
                         new_row.append("Null")
                     else:
                         new_row.append(r)
-                print(new_row)
                 convert = (_,) + tuple(new_row)
+                print(convert)
                 c.execute(f"INSERT INTO jeopardy VALUES {convert}")
-        full_results = c.fetchall()
-        print(full_results)
+        c.execute("SHOW TABLES FROM default LIKE 'jeopardy2'")
+        result = c.fetchall()
+        if not result:
+            c.execute(
+                """ 
+                    CREATE TABLE IF NOT EXISTS jeopardy2 (
+                        Show INT,
+                        Air VARCHAR(255),
+                        Round VARCHAR(255),
+                        Category VARCHAR(255),
+                        Value VARCHAR(255),
+                        Question VARCHAR(255),
+                        Answer VARCHAR(255)
+                        )
+                    """
+                )
+            
+            for _, row in df2.iterrows():
+                new_row = []
+                for r in row:
+                    if r is None:
+                        new_row.append("Null")
+                    else:
+                        new_row.append(r)
+                convert = (_,) + tuple(new_row)
+                print(convert)
+                c.execute(f"INSERT INTO jeopardy2 VALUES {convert}")
+        results = c.fetchall()
+        print(results)
         c.close()
     return "done"
-
-
-if __name__ == "__main__":
-    load()
-
-
-        
-
-
-
-
-
-
-
-
-
-
-
-
-
-#         for _, row in df1.iterrows():
-#                 c.execute(f"INSERT INTO jeopardy VALUES {tuple(row)}")
-#         c.execute("SHOW TABLES FROM default LIKE 'jeopardy2'")
-#         results = c.fetchall()
-#         if not results:
-#             c.execute(
-#                 """
-#                 CREATE TABLE IF NOT EXISTS jeopardy2 (
-#     "Show Number" TEXT,
-#     "Air Date" TEXT,
-#     "Round" TEXT,
-#     "Category" TEXT,
-#     "Value" TEXT,
-#     "Question" TEXT,
-#     "Answer" TEXT
-# )
-# """
-
-#                 )
-#             for _, row in df2.iterrows():
-#                 c.execute(f"INSERT INTO jeopardy2 VALUES {tuple(row)}")
-#         final_results = c.fetchall()
-#         print(final_results)
-#         c.close()
-    # return "done"
 
 
 if __name__ == "__main__":

@@ -1,28 +1,40 @@
 """Query the database"""
 
 from databricks import sql
-import os
-from dotenv import load_dotenv
+import pandas as pd
 
 
 def query():
     """Testing the query function on the newly loaded database"""
-    load_dotenv()
-    host = os.getenv("DB_HOST")
-    token = os.getenv("DB_TOKEN")
-    path = os.getenv("DB_PATH")
+    DB_TOKEN = 'dapie73a0bd9ca8aa631b7e8e50ee667473e-3'
+    DB_HOST = 'adb-6268784207758746.6.azuredatabricks.net'
+    DB_PORT = 443
+    DEBUG= True
+    DB_PATH = '/sql/1.0/warehouses/c96a5e8d89f16478'
+    
     with sql.connect(
-        server_hostname=host,
-        access_token=token,
-        http_path=path,
+        server_hostname=DB_HOST,
+        access_token=DB_TOKEN,
+        http_path=DB_PATH,
     ) as connection:
         c = connection.cursor()
         c.execute("""
-            SELECT w1.Region, w1.Country, w1.year_2000, w1.year_2010, w1.year_2020, w2.year_2022, AVG(w2.year_2022) OVER(PARTITION BY w1.Region) as avg_year_2022
-            FROM wages_1 w1
-            JOIN wages_2 w2 ON w1.Country = w2.Country
-            ORDER BY avg_year_2022 DESC, w1.Country
-            LIMIT 5
+            SELECT
+    j.Category,
+    COUNT(j.Show_Number) AS Show_Count,
+    SUM(j.Value) AS Total_Value
+FROM
+    Jeopardy1 j
+JOIN
+    Jeopardy2 j2
+ON
+    j.Show_Number = j2.Show_Number
+WHERE
+    j.Round = 'Jeopardy!'
+GROUP BY
+    j.Category
+ORDER BY
+    Total_Value DESC;
         """)
         results = c.fetchall()
         columns = [desc[0] for desc in c.description]
