@@ -24,9 +24,9 @@ def query():
     COUNT(j.Show_Number) AS Show_Count,
     SUM(j.Value) AS Total_Value
 FROM
-    Jeopardy1 j
+    jeopardy j
 JOIN
-    Jeopardy2 j2
+    jeopardy2 j2
 ON
     j.Show_Number = j2.Show_Number
 WHERE

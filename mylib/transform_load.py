@@ -65,6 +65,7 @@ def load(dataset="data/Jeopardy.csv", dataset2 = "data/Jeopardy2.csv"):
                 print(convert)
                 c.execute(f"INSERT INTO jeopardy VALUES {convert}")
         c.execute("SHOW TABLES FROM default LIKE 'jeopardy2'")
+        c.execute(f"DROP TABLE IF EXISTS {table_name}")    
         result = c.fetchall()
         if not result:
             c.execute(
