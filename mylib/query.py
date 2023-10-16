@@ -21,16 +21,16 @@ def query():
         c.execute("""
             SELECT
     j.Category,
-    COUNT(j.Show_Number) AS Show_Count,
+    COUNT(j.Round) AS Round_Count,
     SUM(j.Value) AS Total_Value
 FROM
     jeopardy j
 JOIN
     jeopardy2 j2
 ON
-    j.Show_Number = j2.Show_Number
+    j.Round = j2.Round
 WHERE
-    j.Round = 'Jeopardy!'
+    j.Value = '200'
 GROUP BY
     j.Category
 ORDER BY
