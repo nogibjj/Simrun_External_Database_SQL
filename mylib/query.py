@@ -19,22 +19,30 @@ def query():
     ) as connection:
         c = connection.cursor()
         c.execute("""
-            SELECT
-    j.Category,
-    COUNT(j.Round) AS Round_Count,
-    SUM(j.Value) AS Total_Value
+        WITH aggregated_data AS (
+    SELECT
+        j1.Category,
+        SUM(CAST(j1.Value AS INT)) AS TotalValue_j1,
+        SUM(CAST(COALESCE(j2.Value, '0') AS INT)) AS TotalValue_j2
+    FROM
+        jeopardy j1
+    LEFT JOIN
+        jeopardy2 j2 ON j1.Category = j2.Category
+    GROUP BY
+        j1.Category
+)
+
+SELECT
+    Category,
+    TotalValue_j1,
+    TotalValue_j2,
+    TotalValue_j1 + TotalValue_j2 AS CombinedTotalValue
 FROM
-    jeopardy j
-JOIN
-    jeopardy2 j2
-ON
-    j.Round = j2.Round
-WHERE
-    j.Value = '200'
-GROUP BY
-    j.Category
+    aggregated_data
 ORDER BY
-    Total_Value DESC;
+    CombinedTotalValue DESC;
+
+
         """)
         results = c.fetchall()
         columns = [desc[0] for desc in c.description]

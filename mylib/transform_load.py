@@ -69,12 +69,17 @@ def load(dataset="data/Jeopardy.csv"):
     return "done"
 
 def load2(dataset2 = "data/Jeopardy2.csv"):
-    df2 = pd.read_csv(dataset2, delimiter=",", skiprows=1)
+    # df2 = pd.read_csv(dataset2, delimiter=",", skiprows=1)
     DB_TOKEN = 'dapie73a0bd9ca8aa631b7e8e50ee667473e-3'
     DB_HOST = 'adb-6268784207758746.6.azuredatabricks.net'
     DB_PORT = 443
     DEBUG= True
     DB_PATH = '/sql/1.0/warehouses/c96a5e8d89f16478'
+
+    # if 'col8' in df2:
+    #     df2 = df2.drop('col8', axis=1)
+
+    relevant_columns = ['Show Number', 'Air Date', 'Round', 'Category', 'Value', 'Question', 'Answer']
 
     with sql.connect(
         server_hostname = DB_HOST,
@@ -107,8 +112,9 @@ def load2(dataset2 = "data/Jeopardy2.csv"):
                         )
                     """
                 )
-            
+            df2 = pd.read_csv(dataset2, delimiter=",", usecols=relevant_columns)
             df2.fillna(0, inplace=True)
+           
             for _, row in df2.iterrows():
                 new_row = []
                 for r in row:
@@ -119,6 +125,7 @@ def load2(dataset2 = "data/Jeopardy2.csv"):
                 convert = (_,) + tuple(new_row)
                 print(convert)
                 c.execute(f"INSERT INTO jeopardy2 VALUES {convert}")
+            c.execute("ALTER TABLE jeopardy2 SET TBLPROPERTIES ('mergeSchema', 'true')")
         results = c.fetchall()
         print(results)
         c.close()

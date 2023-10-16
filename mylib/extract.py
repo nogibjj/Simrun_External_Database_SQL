@@ -10,8 +10,8 @@ import pandas as pd
 
 def extract(
     url_1="https://raw.githubusercontent.com/nogibjj/Simrun_sqlite-lab/main/data/Jeopardy.csv",
-    file_path="data/Jeopardy.csv", url_2 = "https://github.com/nogibjj/Simrun_External_Database_SQL/raw/main/data/Jeopardy2.csv",
-    file_path_2 = "data/Jeopardy2.csv"
+    file_path="data/Jeopardy.csv", url_2 = "https://github.com/nogibjj/Simrun_External_Database_SQL/raw/main/data/Jeopardy_2.csv",
+    file_path_2 = "data/Jeopardy_2.csv"
 ):
     """ "Extract a url to a file path"""
     with requests.get(url_1) as r:

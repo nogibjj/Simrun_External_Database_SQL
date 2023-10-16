@@ -3,7 +3,7 @@ ETL-Query script
 """
 import fire
 from mylib.extract import extract
-from mylib.transform_load import load
+from mylib.transform_load import load, load2
 from mylib.query import query
 
 
@@ -15,7 +15,8 @@ def main(the_query):
 
     # Transform and load
     print("Transforming data...")
-    load(the_query)
+    # load(the_query)
+    load2(the_query)
 
     # Query
     print("Querying data...")
@@ -25,5 +26,5 @@ def main(the_query):
 if __name__ == "__main__":
     # load("SELECT COUNT(*) FROM table1")
     # fire.Fire(main)
-    extract()
+    main("SELECT COUNT(*) FROM jeopardy2")
     # query("SELECT COUNT(*) FROM table1")
